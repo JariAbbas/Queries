@@ -1,60 +1,88 @@
+CREATE TABLE testing 
+(
+	id int PRIMARY KEY NOT NULL,
+	name varchar(255)
+)
+
+DELETE FROM BAHL.USERS
+WHERE USERID='user123';
+DELETE FROM BAHL.USERS
+WHERE USERID='user456';
+
+DELETE FROM BAHL.BRANCH
+WHERE BRANCHCODE=1;
+DELETE FROM BAHL.BRANCH
+WHERE BRANCHCODE=2;
+DELETE FROM BAHL.BRANCH
+WHERE BRANCHCODE=3;
+DELETE FROM BAHL.BRANCH
+WHERE BRANCHCODE=4;
 
 
---STARTING FROM here
 
+
+
+-- Create Branch table
+CREATE TABLE branches (
+    branchCode INT PRIMARY KEY NOT NULL,
+    branchName VARCHAR(50),
+    location VARCHAR(50),
+    city VARCHAR(50)
+);
+
+-- Create User table
 CREATE TABLE users (
     userId VARCHAR(50) PRIMARY KEY NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    status CHAR(1) NOT NULL CHECK (status IN ('A', 'I')),
-    branchCode INT NOT NULL,
+    password VARCHAR(50),
+    status VARCHAR(1),
+    branchCode INT,
     userIPAddress VARCHAR(50),
     lastSignOnDate TIMESTAMP,
     userRole VARCHAR(50),
-    module VARCHAR(100),
-    FOREIGN KEY (branchCode) REFERENCES branches(branchCode) ON DELETE CASCADE
+    module VARCHAR(50),
+    FOREIGN KEY (branchCode) REFERENCES branches(branchCode)
 );
+
+-- Create Activity table
+CREATE TABLE activities (
+    activityId INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+    userId VARCHAR(50),
+    activity VARCHAR(50),
+    FOREIGN KEY (userId) REFERENCES users(userId)
+);
+
+
+
+
+
+
+
+
+
+
+INSERT INTO branches (branchCode, branchName, location, city)
+VALUES
+  (1001, 'Karachi Main', 'I. I. Chundrigar', 'Karachi'),
+  (1002, 'Center Ponit', 'Qayuumabad', 'Karachi'),
+  (3001, 'Jinnah Super', 'Blue Area', 'Islamabad'),
+  (4001, 'Liberty Branch', 'Noor Jahan Rd', 'Lahore'),
+  (5001, 'Bosan Street', 'Multan Road', 'Multan');
 
 INSERT INTO users (userId, password, status, branchCode, userIPAddress, lastSignOnDate, userRole, MODULE) VALUES
-('TellerUsr', 'pass123', 'I', 1001, '10.51.41.23', CURRENT TIMESTAMP, 'User', null),
-('Creditusr', 'secure456', 'A', 1002, '10.51.41.24', CURRENT TIMESTAMP, 'User', 'Credit Management'),
-('TradeUsr', 'trade789', 'I', 3001, '10.51.41.25', CURRENT TIMESTAMP, 'Trader', null),
-('CRMUsr', 'crm1011', 'I', 4001, 'Get from System', CURRENT TIMESTAMP, 'CRM', null),
-('TDRUsr', 'tdr1213', 'I', 5001, '10.51.41.26', CURRENT TIMESTAMP, 'TDR', null),
-('TellerAuth', 'tellerAuth1415', 'I', 1001, '10.51.41.27', CURRENT TIMESTAMP, 'TellerAuth', null),
-('CreditAuth', 'creditAuth1617', 'A', 1002, '10.51.41.28', CURRENT TIMESTAMP, 'CreditAuth', 'Credit Management'),
-('TradeAuth', 'tradeAuth1819', 'I', 3001, '10.51.41.29', CURRENT TIMESTAMP, 'TradeAuth', null),
-('CRMAuth', 'crmAuth2021', 'I', 4001, '10.51.41.30', CURRENT TIMESTAMP, 'CRMAuth', null),
-('TDRAuth', 'tdrAuth2223', 'I', 5001, '10.51.41.31', CURRENT TIMESTAMP, 'TDRAuth', null);
+('TellerUsr', 'pass123', 'I', 1001, '10.51.41.23', CURRENT_TIMESTAMP, 'User', NULL),
+('Creditusr', 'secure456', 'A', 1002, '10.51.41.24', CURRENT_TIMESTAMP, 'User', 'Credit Management'),
+('TradeUsr', 'trade789', 'I', 3001, '10.51.41.25', CURRENT_TIMESTAMP, 'Trader', NULL),
+('CRMUsr', 'crm1011', 'I', 4001, 'Get from System', CURRENT_TIMESTAMP, 'CRM', NULL),
+('TDRUsr', 'tdr1213', 'I', 5001, '10.51.41.26', CURRENT_TIMESTAMP, 'TDR', NULL),
+('TellerAuth', 'tellerAuth1415', 'I', 1001, '10.51.41.27', CURRENT_TIMESTAMP, 'TellerAuth', NULL),
+('CreditAuth', 'creditAuth1617', 'A', 1002, '10.51.41.28', CURRENT_TIMESTAMP, 'CreditAuth', 'Credit Management'),
+('TradeAuth', 'tradeAuth1819', 'I', 3001, '10.51.41.29', CURRENT_TIMESTAMP, 'TradeAuth', NULL),
+('CRMAuth', 'crmAuth2021', 'I', 4001, '10.51.41.30', CURRENT_TIMESTAMP, 'CRMAuth', NULL),
+('TDRAuth', 'tdrAuth2223', 'I', 5001, '10.51.41.31', CURRENT_TIMESTAMP, 'TDRAuth', NULL);
 
 
-SELECT * FROM users WHERE userId = 'Creditusr' AND branchCode = 1002 AND password = 'secure456' AND status = 'A';
-SELECT password FROM users WHERE userId = 'Creditusr';
 
-
-CREATE TABLE branches (
-    branchCode INT PRIMARY KEY NOT NULL,
-    branchName VARCHAR(100) NOT NULL,
-    location VARCHAR(255),
-    city VARCHAR(100)
-);
-
-INSERT INTO branches (branchCode, branchName, location, city) VALUES
-(1001, 'Karachi Main', 'I.I.Chundrigarh Road', 'Karachi'),
-(1002, 'Centre Point', 'Qayummabad', 'Karachi'),
-(3001, 'Jinnah Super', 'Blue Area', 'Islamabad'),
-(4001, 'Liberty Branch', 'Noor Jahan Rd', 'Lahore'),
-(5001, 'Bosan Street', 'Multan Road', 'Multan');
-
-
-CREATE TABLE activities (
-    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    userId VARCHAR(50) NOT NULL,
-    activity VARCHAR(255) NOT NULL,
-    FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
-);
-
-
-INSERT INTO activities  (userId, activity) VALUES
+INSERT INTO activities (userId, activity) VALUES
 ('Creditusr', 'ASGLIM'),
 ('Creditusr', 'BOOK'),
 ('Creditusr', 'MODIFY'),
@@ -69,7 +97,10 @@ INSERT INTO activities  (userId, activity) VALUES
 ('CreditAuth', 'RECOVERYAUTH'),
 ('CreditAuth', 'REPORT');
 
-DROP TABLE UserDates ;
+DROP TABLE SET_DATES;
+DROP TABLE ACTIVITIES;
+DROP TABLE BRANCHES;
+DROP TABLE USERS;
 
 
 CREATE TABLE UserDates  (
@@ -82,6 +113,18 @@ CREATE TABLE UserDates  (
     FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
 );
 
-ALTER TABLE UserDates ALTER COLUMN branchName DROP NOT NULL;
+ALTER TABLE UserDates
+ADD COLUMN previousDate TIMESTAMP;
 
+
+UPDATE BAHL.BRANCHES
+SET BRANCHNAME='Center Point', LOCATION='Qayuumabad', CITY='Karachi'
+WHERE BRANCHCODE=1002;
+
+DELETE FROM BAHL.USERDATES
+WHERE ID=1;
+DELETE FROM BAHL.USERDATES
+WHERE ID=2;
+DELETE FROM BAHL.USERDATES
+WHERE ID=3;
 
