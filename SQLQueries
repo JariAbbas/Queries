@@ -97,34 +97,101 @@ INSERT INTO activities (userId, activity) VALUES
 ('CreditAuth', 'RECOVERYAUTH'),
 ('CreditAuth', 'REPORT');
 
-DROP TABLE SET_DATES;
+DROP TABLE UserDates;
 DROP TABLE ACTIVITIES;
 DROP TABLE BRANCHES;
 DROP TABLE USERS;
 
 
 CREATE TABLE UserDates  (
-    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT null,
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
     userId VARCHAR(50),
     branchCode INT,
     branchName VARCHAR(100),
-    currentDate TIMESTAMP,
-    nextDate TIMESTAMP,
+    currentDate TIMESTAMP NOT NULL,
+    previousDate TIMESTAMP NULL, -- ✅ NULL allowed now
     FOREIGN KEY (userId) REFERENCES users(userId) ON DELETE CASCADE
 );
+
 
 ALTER TABLE UserDates
 ADD COLUMN previousDate TIMESTAMP;
 
 
-UPDATE BAHL.BRANCHES
-SET BRANCHNAME='Center Point', LOCATION='Qayuumabad', CITY='Karachi'
-WHERE BRANCHCODE=1002;
+CREATE TABLE CustomerInfo (
+    CustomerID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,  -- Auto-increment ID
+    CustomerNumber VARCHAR(20) UNIQUE NOT NULL,  -- User-facing unique ID
+    BranchCode INT NOT NULL,
+    Category CHAR(1) CHECK (Category IN ('G', 'C'))
+);
 
-DELETE FROM BAHL.USERDATES
-WHERE ID=1;
-DELETE FROM BAHL.USERDATES
-WHERE ID=2;
-DELETE FROM BAHL.USERDATES
-WHERE ID=3;
+DROP TABLE CustomerInfo;
+
+CREATE TABLE CurrencyTable (
+    CurrencyCode int PRIMARY KEY NOT null,
+    CurrencyName VARCHAR(50) NOT NULL,
+    CurrencyRate Decimal(15,2) NOT NULL
+);
+
+CREATE TABLE AccountTable (
+    AccountId INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    CustomerNumber VARCHAR(20) NOT NULL,
+    BranchCode INT NOT NULL,
+    AccountTitle VARCHAR(100) NOT NULL,
+    CurrencyCode int NOT NULL,
+    Balance DECIMAL(15,2) DEFAULT 0.00,  -- Loan balance (amount given or due)
+    FOREIGN KEY (CustomerNumber) REFERENCES CustomerInfo(CustomerNumber) ON DELETE CASCADE,
+    FOREIGN KEY (BranchCode) REFERENCES branches(BranchCode) ON DELETE CASCADE,
+    FOREIGN KEY (CurrencyCode) REFERENCES CurrencyTable(CurrencyCode) ON DELETE CASCADE
+);
+
+DROP TABLE LOANLIMITS  ;
+
+-- Currency Data
+INSERT INTO CurrencyTable (CurrencyCode, CurrencyName, CurrencyRate) VALUES 
+(586, 'PKR', 1),
+(840, 'USB', 280.25);
+
+UPDATE DB2ADMIN.CURRENCYTABLE
+SET CURRENCYNAME='USD', CURRENCYRATE=280.25
+WHERE CURRENCYCODE=840;
+
+DELETE FROM DB2ADMIN.CURRENCYTABLE
+WHERE CURRENCYCODE='PKR';
+
+
+-- Customers Data (Using branchCode from your previous data)
+INSERT INTO CustomerInfo (CustomerNumber, BranchCode, Category) VALUES 
+('0081123456011', 1001, 'C'),
+('0081123457011', 1001, 'C'),
+('I23001010011', 1002, 'G'),
+('A01001011000', 1001, 'G');
+
+-- Accounts Data
+INSERT INTO AccountTable (CustomerNumber, BranchCode, AccountTitle, CurrencyCode, Balance) VALUES 
+('0081123456011', 1001, 'ABC Company', 586, 0.00),
+('0081123457011', 1001, 'XYZ Company', 586, 0.00),
+('I23001010011', 1002, 'Income', 840, 0.00),
+('A01001011000', 1001, 'Financing', 840, 0.00);
+
+
+
+CREATE TABLE LoanLimits (
+    CustomerNumber VARCHAR(20) PRIMARY KEY NOT NULL,
+    LoanLimit DECIMAL(15, 2),
+    LimitBalance DECIMAL(15, 2),
+    CreatedBy VARCHAR(50),
+    CreatedOn TIMESTAMP,
+    UpdatedBy VARCHAR(50),
+    UpdatedOn TIMESTAMP,
+    FOREIGN KEY (CustomerNumber) REFERENCES CustomerInfo(CustomerNumber),
+    FOREIGN KEY (CreatedBy) REFERENCES users(userId) ON DELETE SET NULL,
+    FOREIGN KEY (UpdatedBy) REFERENCES users(userId) ON DELETE SET NULL
+);
+
+
+DELETE FROM DB2ADMIN.LOANLIMITS
+WHERE CUSTOMERNUMBER='0081123457011';
+DELETE FROM DB2ADMIN.LOANLIMITS
+WHERE CUSTOMERNUMBER='0081123456011';
 
