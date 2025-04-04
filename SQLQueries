@@ -294,5 +294,100 @@ WHERE ACCOUNTID=4;
 
 
 
+--Todays Office Work
 
+-- LoanApplication Table
+
+DROP TABLE LOANAPPLICATION;
+
+
+-- LoanApplication Table
+CREATE TABLE LoanApplication (
+    LoanID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    LoanNumber VARCHAR(9) UNIQUE NOT null,
+    CustomerNumber VARCHAR(20),
+    GrantDate DATE,
+    DocumentRefNo VARCHAR(12),
+    DealAmount DECIMAL(15, 2),
+    Remarks VARCHAR(250),
+    Accrual DECIMAL(15, 2),
+    Status INT DEFAULT 1, -- 1: Unauthorized, 0: Authorized, 9: Cancelled
+    Authorized_By VARCHAR(50),
+    FOREIGN KEY (CustomerNumber) REFERENCES CustomerInfo(CustomerNumber)
+);
+
+-- RepaymentDetails Table
+CREATE TABLE RepaymentDetails (
+    LoanNumber VARCHAR(9) PRIMARY KEY NOT null, -- LoanNumber as primary key and foreign key
+    NoOfDays INT,
+    MaturityDate DATE,
+    CONSTRAINT fk_loanNumber FOREIGN KEY (LoanNumber) REFERENCES LoanApplication(LoanNumber)
+);
+
+DELETE FROM BAHL.REPAYMENTDETAILS
+WHERE LOANNUMBER='1234';
+
+
+DELETE FROM BAHL.LOANAPPLICATION
+WHERE LOANID=5;
+
+
+
+
+-- MarkupDetails Table
+CREATE TABLE MarkupDetails (
+    LoanID INT PRIMARY KEY,
+    BaseType VARCHAR(20),
+    BaseRate DECIMAL(10, 5),
+    SpreadRate DECIMAL(10, 5),
+    ApplicableRate DECIMAL(10, 5),
+    ODRate DECIMAL(10, 5),
+    CONSTRAINT fk_loanID FOREIGN KEY (LoanID) REFERENCES LoanApplication(LoanID)
+);
+
+-- ProfitReceivable Table
+CREATE TABLE ProfitReceivable (
+    LoanID INT PRIMARY KEY,
+    ProfitAmount DECIMAL(15, 2),
+    ReceivableAmountAtMaturity DECIMAL(15, 2),
+    CONSTRAINT fk_loanID FOREIGN KEY (LoanID) REFERENCES LoanApplication(LoanID)
+);
+
+-- CancelledLoans Table
+CREATE TABLE CancelledLoans (
+    LoanID INT PRIMARY KEY,
+    LoanNumber VARCHAR(9),
+    CustomerNumber VARCHAR(20),
+    GrantDate DATE,
+    DocumentRefNo VARCHAR(12),
+    DealAmount DECIMAL(15, 2),
+    Remarks VARCHAR(250),
+    Accrual DECIMAL(15, 2),
+    NoOfDays INT,
+    MaturityDate DATE,
+    BaseType VARCHAR(20),
+    BaseRate DECIMAL(10, 5),
+    SpreadRate DECIMAL(10, 5),
+    ApplicableRate DECIMAL(10, 5),
+    ODRate DECIMAL(10, 5),
+    ProfitAmount DECIMAL(15, 2),
+    ReceivableAmountAtMaturity DECIMAL(15, 2),
+    CancellationDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_customerNumber FOREIGN KEY (CustomerNumber) REFERENCES CustomerInfo(CustomerNumber)
+);
+
+-- VoucherTransactions Table
+CREATE TABLE VoucherTransactions (
+    TransactionID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    LoanID INT,
+    TransactionCode VARCHAR(5),
+    VoucherNo VARCHAR(10),
+    TransactionNo INT,
+    AccountNo VARCHAR(20),
+    AccountTitle VARCHAR(100),
+    Currency VARCHAR(3),
+    DebitAmount DECIMAL(15, 2),
+    CreditAmount DECIMAL(15, 2),
+    CONSTRAINT fk_loanID FOREIGN KEY (LoanID) REFERENCES LoanApplication(LoanID)
+);
 
