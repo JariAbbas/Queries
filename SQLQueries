@@ -159,6 +159,8 @@ CREATE TABLE GLAccountsTable (
     FOREIGN KEY (CurrencyCode) REFERENCES CurrencyTable(CurrencyCode) ON DELETE CASCADE
 );
 
+SELECT AccountTitle FROM GLAccountsTable;
+SELECT CustomerNumber FROM GLAccountsTable WHERE AccountTitle = 'Income' LIMIT 1;
 DROP TABLE ACCOUNTTABLE ;
 
 DROP TABLE LOANLIMITS  ;
@@ -490,6 +492,11 @@ CREATE TABLE BAHL.CancelledLoan (
     FOREIGN KEY (CustomerNumber) REFERENCES CustomerInfo(CustomerNumber)
 );
 
+
+
+
+
+
 ALTER TABLE BAHL.LoanApplication
 ADD COLUMN NoOfDays INTEGER;
 
@@ -499,3 +506,57 @@ ADD COLUMN ApplicableRate DOUBLE;
 ALTER TABLE BAHL.LoanApplication
 ADD COLUMN ODRate DOUBLE;
 
+
+
+
+DELETE FROM BAHL.CANCELLEDLOAN
+WHERE LOANID=1;
+
+
+CREATE TABLE Transactions (
+    TransactionID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    LoanNumber VARCHAR(9) NOT NULL, -- Linking to LoanApplication
+    TransactionCode VARCHAR(10) NOT NULL, -- 'BOOK', 'RECOVER'
+    VoucherNo VARCHAR(20) NOT NULL,
+    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    AccountNo VARCHAR(20) NOT NULL,
+    AccountTitle VARCHAR(100) NOT NULL,
+    Currency VARCHAR(3) NOT NULL,
+    DebitAmount DECIMAL(15, 2),
+    CreditAmount DECIMAL(15, 2),
+    DealAmount DECIMAL(15, 2), -- From LoanApplication
+    ProfitAmount DECIMAL(15, 2), -- From LoanFinancialDetails
+    ApplicableRate DOUBLE, -- From LoanApplication/MarkupTable
+    TransactionNarrative VARCHAR(255),
+    FOREIGN KEY (LoanNumber) REFERENCES BAHL.LoanApplication(LoanNumber) ON DELETE CASCADE
+);
+
+-- Create indexes separately
+CREATE INDEX idx_loan_transaction ON Transactions (LoanNumber, TransactionCode);
+CREATE INDEX idx_voucherNo ON Transactions (VoucherNo);
+
+
+
+
+
+
+-- Recovery Table
+CREATE TABLE BAHL.Recovery (
+    RecoveryID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    LoanNumber VARCHAR(9) NOT NULL,
+    CustomerNumber VARCHAR(20),
+    GrantDate DATE,
+    DocumentRefNo VARCHAR(12),
+    DealAmount DECIMAL(15, 2),
+    Remarks VARCHAR(250),
+    Accrual DECIMAL(15, 2),
+    Authorized_By VARCHAR(50),
+    NoOfDays INTEGER,
+    ApplicableRate DOUBLE,
+    ODRate DOUBLE,
+    ProfitAmount DECIMAL(15, 2),
+    ReceivableAmountAtMaturity DECIMAL(15, 2),
+    RecoveryDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status INT DEFAULT 1, -- 1: Recovered
+    FOREIGN KEY (LoanNumber) REFERENCES BAHL.LoanApplication(LoanNumber) ON DELETE CASCADE
+);
