@@ -381,7 +381,7 @@ CREATE TABLE LoanRecovery (
 
 
 
---Monday
+--Monday - HOME
 
 DROP TABLE CancelledLoan;
 
@@ -422,4 +422,34 @@ VALUES
 ('FIXED Rate', null);
 
 
- 
+-- Home work great
+
+
+-- DB2 SQL to create the BookingTransactionTable
+CREATE TABLE BookingTransactionTable (
+    TransactionCode VARCHAR(5) NOT NULL,
+    VoucherNumber VARCHAR(50) NOT NULL,
+    TransactionNumber INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    AccountNumber VARCHAR(50) NOT NULL,
+    AccountTitle VARCHAR(100),
+    Currency VARCHAR(3),
+    DebitAmount DECIMAL(19, 2),
+    CreditAmount DECIMAL(19, 2),
+    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (TransactionCode, VoucherNumber, TransactionNumber)
+);
+
+
+-- DB2 SQL to create the RecoveryTransactionTable
+CREATE TABLE RecoveryTransactionTable (
+    TransactionCode VARCHAR(5) NOT NULL,
+    VoucherNumber VARCHAR(50) NOT NULL,
+    TransactionNumber INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    AccountNumber VARCHAR(50) NOT NULL,
+    AccountTitle VARCHAR(100),
+    Currency VARCHAR(3),
+    DebitAmount DECIMAL(19, 2),
+    CreditAmount DECIMAL(19, 2),
+    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (TransactionCode, VoucherNumber, TransactionNumber)
+);
