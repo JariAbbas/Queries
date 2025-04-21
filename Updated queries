@@ -426,6 +426,22 @@ VALUES
 
 
 -- DB2 SQL to create the BookingTransactionTable
+--CREATE TABLE BookingTransactionTable (
+--    TransactionCode VARCHAR(5) NOT NULL,
+--    VoucherNumber VARCHAR(50) NOT NULL,
+--    TransactionNumber INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+--    AccountNumber VARCHAR(50) NOT NULL,
+--    AccountTitle VARCHAR(100),
+--    Currency VARCHAR(3),
+--    DebitAmount DECIMAL(19, 2),
+--    CreditAmount DECIMAL(19, 2),
+--    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--    PRIMARY KEY (TransactionCode, VoucherNumber, TransactionNumber)
+--);
+
+DROP TABLE BOOKINGTRANSACTIONTABLE;
+
+-- DB2 SQL to create the BookingTransactionTable (modified)
 CREATE TABLE BookingTransactionTable (
     TransactionCode VARCHAR(5) NOT NULL,
     VoucherNumber VARCHAR(50) NOT NULL,
@@ -435,10 +451,11 @@ CREATE TABLE BookingTransactionTable (
     Currency VARCHAR(3),
     DebitAmount DECIMAL(19, 2),
     CreditAmount DECIMAL(19, 2),
-    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Removed DEFAULT CURRENT_TIMESTAMP
     PRIMARY KEY (TransactionCode, VoucherNumber, TransactionNumber)
 );
 
+DROP TABLE BOOKINGTRANSACTIONTABLE;
 
 -- DB2 SQL to create the RecoveryTransactionTable
 CREATE TABLE RecoveryTransactionTable (
@@ -453,3 +470,41 @@ CREATE TABLE RecoveryTransactionTable (
     TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (TransactionCode, VoucherNumber, TransactionNumber)
 );
+
+
+
+
+
+
+
+
+
+
+--Friday
+
+CREATE TABLE UnauthorizedLoanLimits (
+    LimitID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+    CustomerNumber VARCHAR(20) UNIQUE NOT NULL,
+    LoanLimit DECIMAL(15, 2),
+    LimitBalance DECIMAL(15, 2),
+    CreatedBy VARCHAR(50),
+    CreatedOn TIMESTAMP,
+    UpdatedBy VARCHAR(50),
+    UpdatedOn TIMESTAMP,
+    FOREIGN KEY (CustomerNumber) REFERENCES CustomerInfo(CustomerNumber),
+    FOREIGN KEY (CreatedBy) REFERENCES users(userId) ON DELETE SET NULL,
+    FOREIGN KEY (UpdatedBy) REFERENCES users(userId) ON DELETE SET NULL
+);
+
+
+ALTER TABLE UnauthorizedLoanLimits
+ADD Status INT DEFAULT 1;
+
+ALTER TABLE LoanLimits
+ADD Status INT DEFAULT 9;
+
+DELETE FROM BAHL.LOANLIMITS
+WHERE LIMITID=190;
+
+
+
