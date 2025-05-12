@@ -554,3 +554,65 @@ WHERE LIMITID=241;
 
 
 
+SELECT
+    CASE
+        WHEN LENGTH(BT.AccountNumber) = 13 AND BT.AccountNumber LIKE '%%%%%%%%%%%' -- Check if it's 13 digits
+        THEN AT.BRANCHCODE || '-' ||
+             SUBSTR(BT.AccountNumber, 1, 4) || '-' ||
+             SUBSTR(BT.AccountNumber, 5, 6) || '-' ||
+             SUBSTR(BT.AccountNumber, 11, 2) || '-' ||
+             SUBSTR(BT.AccountNumber, 13, 1)
+        ELSE BT.AccountNumber
+    END AS AccountNumber,
+    BT.TRANSACTIONCODE,
+    BT.TRANSACTIONNUMBER,
+    BT.VOUCHERNUMBER,
+    BT.ACCOUNTTITLE,
+    BT.TRANSACTIONDATE,
+    BT.DEBITAMOUNT,
+    BT.CREDITAMOUNT,
+    BT.CURRENCY,
+    BT.LOANNUMBER
+FROM
+    BAHL.BOOKINGTRANSACTIONTABLE BT
+LEFT JOIN
+    BAHL.ACCOUNTTABLE AT ON BT.AccountNumber = AT.CustomerNumber
+WHERE
+    BT.VoucherNumber = 1234;
+
+
+
+
+SELECT
+    CASE
+        WHEN LENGTH(RT.AccountNumber) = 13 AND RT.AccountNumber LIKE '%%%%%%%%%%%' -- Check if it's 13 digits
+        THEN AT.BRANCHCODE || '-' ||
+             SUBSTR(RT.AccountNumber, 1, 4) || '-' ||
+             SUBSTR(RT.AccountNumber, 5, 6) || '-' ||
+             SUBSTR(RT.AccountNumber, 11, 2) || '-' ||
+             SUBSTR(RT.AccountNumber, 13, 1)
+        ELSE RT.AccountNumber
+    END AS AccountNumber,
+    RT.TransactionCode,
+    RT.TransactionNumber,
+    RT.VoucherNumber,
+    RT.AccountTitle,
+    RT.TransactionDate,
+    RT.DebitAmount,
+    RT.CreditAmount,
+    RT.Currency,
+    LA.LoanId, -- LoanId column from LoanApplicationTable
+    RT.VoucherId AS LoanNumber -- Assuming VoucherId corresponds to LoanNumber
+FROM
+    BAHL.RECOVERYTRANSACTIONTABLE RT
+LEFT JOIN
+    BAHL.ACCOUNTTABLE AT ON RT.AccountNumber = AT.CustomerNumber
+LEFT JOIN
+    BAHL.LOANAPPLICATION LA ON RT.VoucherNumber = LA.loanNumber -- Joining on VoucherNumber
+WHERE
+    RT.VoucherNumber = 9000
+ORDER BY
+    RT.VoucherNumber;
+
+
+
