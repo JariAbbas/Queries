@@ -127,6 +127,12 @@ CREATE TABLE CustomerInfo (
     Category CHAR(1) CHECK (Category IN ('G', 'C'))
 );
 
+
+INSERT INTO CUSTOMERINFO
+(CUSTOMERNUMBER, BRANCHCODE, CATEGORY)
+VALUES('0081123456034', 1002, 'C');
+
+
 DROP TABLE CustomerInfo;
 
 CREATE TABLE CurrencyTable (
@@ -204,10 +210,7 @@ SELECT * FROM LoanLimits WHERE customerNumber = '0081123456011';
 
 
 INSERT INTO AccountTable (CustomerNumber, BranchCode, AccountTitle, CurrencyCode, Balance) VALUES 
-('0081123456011', 1001, 'ABC Company', 586, 15000),
-('0081123457011', 1001, 'XYZ Company', 586, 10000),
-('I23001010011', 1002, 'Income', 840, 0.00),
-('A01001011000', 1001, 'Financing', 840, 0.00);
+('0081123456034', 1002, 'Lucky Inc', 586, 150000);
 
 
 DELETE FROM BAHL.ACCOUNTTABLE
@@ -552,7 +555,7 @@ FROM
 DELETE FROM LOANLIMITS
 WHERE LIMITID=241;
 
-
+-- Loan Book
 
 SELECT
     CASE
@@ -581,7 +584,7 @@ WHERE
     BT.VoucherNumber = 1234;
 
 
-
+-- RecoveryTran
 
 SELECT
     CASE
@@ -613,6 +616,472 @@ WHERE
     RT.VoucherNumber = 9000
 ORDER BY
     RT.VoucherNumber;
+
+
+
+-- 3rd last
+
+
+SELECT
+    LA.LoanID,
+    B.BranchCode,
+    LA.DEALAMOUNT,
+    CASE
+        WHEN LA.Status = 9 THEN 'Authorized'
+        WHEN LA.Status = 1 THEN 'Unauthorized'
+        WHEN LA.Status = 2 THEN 'Unauthorized Modification'
+        WHEN LA.Status = 7 THEN 'Unauthorized Recovery'
+        WHEN LA.Status = 8 THEN 'Recovered'
+        WHEN LA.Status = 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS StatusText,
+    LA.GrantDate AS LoanDate,
+    86036 AS TransactionCode,  -- Set TransactionCode to 86036
+    CASE
+        WHEN LA.Status = 9 THEN 'Authorized'
+        WHEN LA.Status = 1 THEN 'Unauthorized'
+        WHEN LA.Status = 2 THEN 'Unauthorized Modification'
+        WHEN LA.Status = 7 THEN 'Unauthorized Recovery'
+        WHEN LA.Status = 8 THEN 'Recovered'
+        WHEN LA.Status = 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(LA.CustomerNumber) = 13 AND LA.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(LA.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(LA.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(LA.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(LA.CustomerNumber, 13, 1)
+        ELSE LA.CustomerNumber
+    END AS FormattedAccountNumber
+FROM
+    BAHL.LoanApplication LA
+LEFT JOIN
+    BAHL.CustomerInfo CI ON LA.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+ORDER BY
+    LA.LoanID;
+
+
+
+SELECT
+    CL.LoanID,
+    B.BranchCode,
+    CL.DealAmount,
+    CASE
+        WHEN CL.Status = 1 THEN 'Unauthorized Cancellation'
+        WHEN CL.Status = 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS StatusText,
+    CL.GrantDate AS LoanDate,
+    86036 AS TransactionCode,  -- Set TransactionCode to 86036
+    CASE
+        WHEN CL.Status = 1 THEN 'Unauthorized Cancellation'
+        WHEN CL.Status = 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(CL.CustomerNumber) = 13 AND CL.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(CL.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(CL.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(CL.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(CL.CustomerNumber, 13, 1)
+        ELSE CL.CustomerNumber
+    END AS FormattedAccountNumber
+FROM
+    BAHL.CancelledLoan CL
+LEFT JOIN
+    BAHL.CustomerInfo CI ON CL.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+ORDER BY
+    CL.LoanID;
+
+
+
+-- Updated
+
+
+SELECT
+    LA.LoanID,
+    B.BranchCode,
+    LA.DEALAMOUNT,
+    CASE
+        WHEN LA.Status = 9 THEN 'Authorized'
+        WHEN LA.Status = 1 THEN 'Unauthorized'
+        WHEN LA.Status = 2 THEN 'Unauthorized Modification'
+        WHEN LA.Status = 7 THEN 'Unauthorized Recovery'
+        WHEN LA.Status = 8 THEN 'Recovered'
+        WHEN LA.Status = 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS StatusText,
+    LA.GrantDate AS LoanDate,
+    86036 AS TransactionCode,  -- Set TransactionCode to 86036
+    CASE
+        WHEN LA.Status = 9 THEN 'Authorized'
+        WHEN LA.Status = 1 THEN 'Unauthorized'
+        WHEN LA.Status = 2 THEN 'Unauthorized Modification'
+        WHEN LA.Status = 7 THEN 'Unauthorized Recovery'
+        WHEN LA.Status = 8 THEN 'Recovered'
+        WHEN LA.Status = 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(LA.CustomerNumber) = 13 AND LA.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(LA.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(LA.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(LA.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(LA.CustomerNumber, 13, 1)
+        ELSE LA.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Active Loan' AS LoanType
+FROM
+    BAHL.LoanApplication LA
+LEFT JOIN
+    BAHL.CustomerInfo CI ON LA.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+
+UNION ALL
+
+SELECT
+    CL.LoanID,
+    B.BranchCode,
+    CL.DealAmount,
+    CASE
+        WHEN CL.Status = 1 THEN 'Unauthorized Cancellation'
+        WHEN CL.Status = 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS StatusText,
+    CL.GrantDate AS LoanDate,
+    86036 AS TransactionCode,  -- Set TransactionCode to 86036
+    CASE
+        WHEN CL.Status = 1 THEN 'Unauthorized Cancellation'
+        WHEN CL.Status = 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(CL.CustomerNumber) = 13 AND CL.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(CL.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(CL.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(CL.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(CL.CustomerNumber, 13, 1)
+        ELSE CL.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Cancelled Loan' AS LoanType
+FROM
+    BAHL.CancelledLoan CL
+LEFT JOIN
+    BAHL.CustomerInfo CI ON CL.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode;
+
+
+
+
+-- Updated Final - to be implemented
+
+
+SELECT
+    LA.LoanID,
+    B.BranchCode,
+    CASE LA.Status
+        WHEN 8 THEN LA.DEALAMOUNT
+        ELSE -LA.DEALAMOUNT
+    END AS DEALAMOUNT,
+    CASE LA.Status
+        WHEN 9 THEN 'Authorized'
+        WHEN 1 THEN 'Unauthorized'
+        WHEN 2 THEN 'Unauthorized Modification'
+        WHEN 7 THEN 'Unauthorized Recovery'
+        WHEN 8 THEN 'Recovered'
+        WHEN 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS StatusText,
+    LA.GrantDate AS LoanDate,
+    CASE LA.Status
+        WHEN 9 THEN CAST(86036 AS INTEGER)
+        WHEN 1 THEN CAST(86036 AS INTEGER)
+        WHEN 2 THEN CAST(86036 AS INTEGER)
+        WHEN 7 THEN CAST(86036 AS INTEGER)
+        WHEN 8 THEN CAST(36091 AS INTEGER)
+        WHEN 987 THEN NULL
+        ELSE NULL
+    END AS TransactionCode,
+    CASE LA.Status
+        WHEN 9 THEN 'Authorized'
+        WHEN 1 THEN 'Unauthorized'
+        WHEN 2 THEN 'Unauthorized Modification'
+        WHEN 7 THEN 'Unauthorized Recovery'
+        WHEN 8 THEN 'Recovered'
+        WHEN 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(LA.CustomerNumber) = 13 AND LA.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(LA.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(LA.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(LA.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(LA.CustomerNumber, 13, 1)
+        ELSE LA.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Active Loan' AS LoanType
+FROM
+    BAHL.LoanApplication LA
+LEFT JOIN
+    BAHL.CustomerInfo CI ON LA.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+
+UNION ALL
+
+SELECT
+    CL.LoanID,
+    B.BranchCode,
+    CL.DealAmount AS DEALAMOUNT,
+    CASE CL.Status
+        WHEN 1 THEN 'Unauthorized Cancellation'
+        WHEN 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS StatusText,
+    CL.GrantDate AS LoanDate,
+    CASE CL.Status
+        WHEN 1 THEN CAST(NULL AS INTEGER) -- Explicitly cast NULL to INTEGER
+        WHEN 9 THEN CAST(NULL AS INTEGER) -- Explicitly cast NULL to INTEGER
+        ELSE CAST(NULL AS INTEGER)       -- Explicitly cast NULL to INTEGER
+    END AS TransactionCode,
+    CASE CL.Status
+        WHEN 1 THEN 'Unauthorized Cancellation'
+        WHEN 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(CL.CustomerNumber) = 13 AND CL.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(CL.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(CL.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(CL.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(CL.CustomerNumber, 13, 1)
+        ELSE CL.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Cancelled Loan' AS LoanType
+FROM
+    BAHL.CancelledLoan CL
+LEFT JOIN
+    BAHL.CustomerInfo CI ON CL.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode;
+
+
+-- daterange
+
+SELECT
+    LA.LoanID,
+    B.BranchCode,
+    CASE LA.Status
+        WHEN 8 THEN LA.DEALAMOUNT
+        ELSE -LA.DEALAMOUNT
+    END AS DEALAMOUNT,
+    CASE LA.Status
+        WHEN 9 THEN 'Authorized'
+        WHEN 1 THEN 'Unauthorized'
+        WHEN 2 THEN 'Unauthorized Modification'
+        WHEN 7 THEN 'Unauthorized Recovery'
+        WHEN 8 THEN 'Recovered'
+        WHEN 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS StatusText,
+    LA.GrantDate AS LoanDate,
+    CASE LA.Status
+        WHEN 9 THEN CAST(86036 AS INTEGER)
+        WHEN 1 THEN CAST(86036 AS INTEGER)
+        WHEN 2 THEN CAST(86036 AS INTEGER)
+        WHEN 7 THEN CAST(86036 AS INTEGER)
+        WHEN 8 THEN CAST(36091 AS INTEGER)
+        WHEN 987 THEN NULL
+        ELSE NULL
+    END AS TransactionCode,
+    CASE LA.Status
+        WHEN 9 THEN 'Authorized'
+        WHEN 1 THEN 'Unauthorized'
+        WHEN 2 THEN 'Unauthorized Modification'
+        WHEN 7 THEN 'Unauthorized Recovery'
+        WHEN 8 THEN 'Recovered'
+        WHEN 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(LA.CustomerNumber) = 13 AND LA.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(LA.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(LA.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(LA.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(LA.CustomerNumber, 13, 1)
+        ELSE LA.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Active Loan' AS LoanType
+FROM
+    BAHL.LoanApplication LA
+LEFT JOIN
+    BAHL.CustomerInfo CI ON LA.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+WHERE
+    LA.GrantDate BETWEEN '2025-06-30' AND '2025-07-01'
+
+UNION ALL
+
+SELECT
+    CL.LoanID,
+    B.BranchCode,
+    CL.DealAmount AS DEALAMOUNT,
+    CASE CL.Status
+        WHEN 1 THEN 'Unauthorized Cancellation'
+        WHEN 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS StatusText,
+    CL.GrantDate AS LoanDate,
+    CASE CL.Status
+        WHEN 1 THEN CAST(NULL AS INTEGER) -- Explicitly cast NULL to INTEGER
+        WHEN 9 THEN CAST(NULL AS INTEGER) -- Explicitly cast NULL to INTEGER
+        ELSE CAST(NULL AS INTEGER)       -- Explicitly cast NULL to INTEGER
+    END AS TransactionCode,
+    CASE CL.Status
+        WHEN 1 THEN 'Unauthorized Cancellation'
+        WHEN 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(CL.CustomerNumber) = 13 AND CL.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(CL.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(CL.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(CL.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(CL.CustomerNumber, 13, 1)
+        ELSE CL.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Cancelled Loan' AS LoanType
+FROM
+    BAHL.CancelledLoan CL
+LEFT JOIN
+    BAHL.CustomerInfo CI ON CL.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+WHERE
+    CL.GrantDate BETWEEN '2025-06-30' AND '2025-07-01';
+    
+    
+    
+-- Loan Voucher Range.
+
+
+
+
+SELECT
+    LA.LoanID,
+    B.BranchCode,
+    CASE LA.Status
+        WHEN 8 THEN LA.DEALAMOUNT
+        ELSE -LA.DEALAMOUNT
+    END AS DEALAMOUNT,
+    CASE LA.Status
+        WHEN 9 THEN 'Authorized'
+        WHEN 1 THEN 'Unauthorized'
+        WHEN 2 THEN 'Unauthorized Modification'
+        WHEN 7 THEN 'Unauthorized Recovery'
+        WHEN 8 THEN 'Recovered'
+        WHEN 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS StatusText,
+    LA.GrantDate AS LoanDate,
+    CASE LA.Status
+        WHEN 9 THEN CAST(86036 AS INTEGER)
+        WHEN 1 THEN CAST(86036 AS INTEGER)
+        WHEN 2 THEN CAST(86036 AS INTEGER)
+        WHEN 7 THEN CAST(86036 AS INTEGER)
+        WHEN 8 THEN CAST(36091 AS INTEGER)
+        WHEN 987 THEN NULL
+        ELSE NULL
+    END AS TransactionCode,
+    CASE LA.Status
+        WHEN 9 THEN 'Authorized'
+        WHEN 1 THEN 'Unauthorized'
+        WHEN 2 THEN 'Unauthorized Modification'
+        WHEN 7 THEN 'Unauthorized Recovery'
+        WHEN 8 THEN 'Recovered'
+        WHEN 987 THEN 'Rejected'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(LA.CustomerNumber) = 13 AND LA.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(LA.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(LA.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(LA.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(LA.CustomerNumber, 13, 1)
+        ELSE LA.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Active Loan' AS LoanType
+FROM
+    BAHL.LoanApplication LA
+LEFT JOIN
+    BAHL.CustomerInfo CI ON LA.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+WHERE
+    LA.LoanID BETWEEN 100 AND 547
+
+UNION ALL
+
+SELECT
+    CL.LoanID,
+    B.BranchCode,
+    CL.DealAmount AS DEALAMOUNT,
+    CASE CL.Status
+        WHEN 1 THEN 'Unauthorized Cancellation'
+        WHEN 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS StatusText,
+    CL.GrantDate AS LoanDate,
+    CASE CL.Status
+        WHEN 1 THEN CAST(NULL AS INTEGER)
+        WHEN 9 THEN CAST(NULL AS INTEGER)
+        ELSE CAST(NULL AS INTEGER)
+    END AS TransactionCode,
+    CASE CL.Status
+        WHEN 1 THEN 'Unauthorized Cancellation'
+        WHEN 9 THEN 'Cancelled'
+        ELSE 'Unknown'
+    END AS Description,
+    CASE
+        WHEN LENGTH(CL.CustomerNumber) = 13 AND CL.CustomerNumber LIKE '%%%%%%%%%%%'
+        THEN B.BranchCode || '-' ||
+             SUBSTR(CL.CustomerNumber, 1, 4) || '-' ||
+             SUBSTR(CL.CustomerNumber, 5, 6) || '-' ||
+             SUBSTR(CL.CustomerNumber, 11, 2) || '-' ||
+             SUBSTR(CL.CustomerNumber, 13, 1)
+        ELSE CL.CustomerNumber
+    END AS FormattedAccountNumber,
+    'Cancelled Loan' AS LoanType
+FROM
+    BAHL.CancelledLoan CL
+LEFT JOIN
+    BAHL.CustomerInfo CI ON CL.CustomerNumber = CI.CustomerNumber
+LEFT JOIN
+    BAHL.Branches B ON CI.BranchCode = B.BranchCode
+WHERE
+    CL.CustomerNumber IN (SELECT CustomerNumber FROM BAHL.LoanApplication WHERE LoanID BETWEEN 100 AND 547);
+
+
+
+
+
 
 
 
