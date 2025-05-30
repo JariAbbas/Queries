@@ -207,10 +207,11 @@ WHERE ACCOUNTID=2;
 
 SELECT * FROM LoanLimits WHERE customerNumber = '0081123456011';
 
-
+INSERT INTO CustomerInfo (CustomerNumber, BranchCode, Category)
+VALUES ('0081123455033', 1002, 'C'); -- Or whatever the correct BranchCode and Category are for this customer
 
 INSERT INTO AccountTable (CustomerNumber, BranchCode, AccountTitle, CurrencyCode, Balance) VALUES 
-('0081123456034', 1002, 'Lucky Inc', 586, 150000);
+('0081123455033', 1002, 'EstateWala Inc', 586, 150000);
 
 
 DELETE FROM BAHL.ACCOUNTTABLE
@@ -1014,7 +1015,6 @@ ORDER BY
 
 
 
-
 WITH CombinedData AS (
     SELECT
         LA.LoanID,
@@ -1312,9 +1312,25 @@ WHERE
 ORDER BY
     LoanID;
 
-
-
-
-
-
-
+    
+SELECT DISTINCT
+    CASE
+        WHEN LENGTH(BT.AccountNumber) = 13 AND BT.AccountNumber LIKE '%%%%%%%%%%%%%'
+        THEN SUBSTR(BT.AccountNumber, 5, 6)
+        ELSE BT.AccountNumber
+    END AS AccountNumber,
+    BT.TRANSACTIONCODE,
+    BT.TRANSACTIONNUMBER,
+    BT.VOUCHERNUMBER,
+    BT.ACCOUNTTITLE,
+    BT.TRANSACTIONDATE,
+    BT.DEBITAMOUNT,
+    BT.CREDITAMOUNT,
+    BT.CURRENCY,
+    BT.LOANNUMBER || '/' || YEAR(BT.TRANSACTIONDATE) AS LoanNumberWithYear
+FROM
+    BOOKINGTRANSACTIONTABLE BT
+LEFT JOIN
+    ACCOUNTTABLE AT ON BT.AccountNumber = AT.CustomerNumber
+WHERE
+    BT.VoucherNumber = 0000
